@@ -477,8 +477,7 @@ class Component extends DressElement {
         // append external libraries required by component
         if (componentInfo.options && componentInfo.options.externalResources) {
             console.log('component ' + name + ' needs additional resources', componentInfo.options.externalResources);
-			// External resources support is currently disabled
-			// self._addExternalResources(name, componentInfo.options.externalResources);
+            self._addExternalResources(name, componentInfo.options.externalResources);
         }
 
         if (possibleContainers.length) {
