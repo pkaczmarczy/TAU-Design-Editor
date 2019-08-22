@@ -29,6 +29,7 @@ import iframeUtils from '../utils/iframe';
 import pathUtils from '../utils/path-utils';
 import fs from 'fs-extra';
 import path, {relative} from 'path';
+import {ExternalResourcesManager} from './external-resources-manager'
 
 const KEY_CODE = { DELETE: 46 },
 	INTERNAL_ID_ATTRIBUTE = 'data-id',
@@ -423,6 +424,7 @@ class DesignEditor extends DressElement {
 				}
 			}
 		};
+		this._externalResourcesManager = new ExternalResourcesManager(this._$iframe[0]);
 	}
 
 	/**
@@ -731,6 +733,8 @@ class DesignEditor extends DressElement {
 
 		this._updateIFrameHeight();
 
+		// Add external resources if any are required by widget
+		// Bellow code adds resource only to mode
 		packageInfo = packageManager.getPackages(Package.TYPE.COMPONENT).getPackageByElement(generatedElement);
 		if (packageInfo && packageInfo.options) {
 			if (packageInfo.options.altSelector) {
@@ -1470,6 +1474,15 @@ class DesignEditor extends DressElement {
 	 */
 	getURI() {
 		return this._uri;
+	}
+
+	/**
+	 * Loads additional resources to editor view
+	 * @param {string} widgetName
+	 * @param {Array} resources
+	 */
+	loadExternalResources(widgetName, resources) {
+		this._externalResourcesManager.loadExternalResources(widgetName, resources);
 	}
 }
 

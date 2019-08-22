@@ -10,6 +10,7 @@ import {EVENTS, eventEmitter} from '../../../events-emitter';
 import {elementSelector} from '../../../pane/element-selector';
 import {ViewType} from '../../../static';
 import {StateManager} from '../../../system/state-manager';
+import { ExternalResourceManager } from '../../../pane/external-resources-manager';
 
 const TYPE_DESIGN_EDITOR = ViewType.Design;
 
@@ -385,73 +386,8 @@ class Component extends DressElement {
      */
     _addExternalResources(name, externalResources) {
         let self = this;
-        let iframe = self._editor._$iframe.get(0);
 
-        if (iframe) {
-            let contentDocument = iframe.contentDocument;
-            let head = contentDocument.head;
-            let queue = [];
-            function done() {
-                queue.shift();
-                if (queue.length) {
-                    queue[0].call();
-                }
-            }
-
-            externalResources.forEach(function (lib) {
-                if (typeof lib === "string") {
-                    lib = {"src": lib};
-                }
-                let element;
-                let fileExtension = lib.src.match(/([^.]+)$/);
-                if (fileExtension.length) {
-                    fileExtension = fileExtension[0];
-                    switch (fileExtension) {
-                        case "js" :
-                            if (head.querySelector("script[src='" + lib.src + "']")) {
-                                // continue
-                                return;
-                            };
-                            element = document.createElement("script");
-                            element.setAttribute("type", "text/javascript");
-                            element.setAttribute("src", lib.src);
-                        break;
-                        case "css" :
-                            if (head.querySelector("link[href='" + lib.src + "']")) {
-                                // continue
-                                return;
-                            };
-                            element = document.createElement("link");
-                            element.setAttribute("type", "text/css");
-                            element.setAttribute("rel", "stylesheet");
-                            element.setAttribute("href", lib.src);
-                        break;
-                    }
-
-                    if (element) {
-                        // async load
-                        element.addEventListener("load", function () {
-                            console.log(name + ' has additionaly loaded ' + lib.src);
-                            done();
-                        });
-                        // add attributes
-                        if (lib.attributes) {
-                            Object.keys(lib.attributes).forEach(function (key) {
-                                element.setAttribute(key, lib.attributes[key]);
-                            });
-                        }
-
-                        // append script to iframe
-                        queue.push(function () {
-                            head.appendChild(element);
-                        });
-                    }
-                };
-            });
-            if (queue.length) {
-                queue[0].call();
-            }
-        }
+        self._editor.loadExternalResources(name, externalResources);
     }
 
     /**
@@ -545,6 +481,7 @@ class Component extends DressElement {
         }
 
         dragInfo.$dragHelper.remove();
+        console.log("p.kaczmarczy", "Trigger insert component element");
         eventEmitter.emit(EVENTS.InsertComponent, event, dragInfo.componentInfo);
     }
 
